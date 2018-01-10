@@ -1,6 +1,6 @@
-# The title of your library here, either `inventory-dialog.inc` or `My Cool Library`
+# Inventory Dialog
 
-![sampctl](https://shields.southcla.ws/badge/sampctl-inventory-dialog-2f2f2f.svg?style=for-the-badge)
+![sampctl](https://shields.southcla.ws/badge/sampctl-inventory--dialog-2f2f2f.svg?style=for-the-badge)
 
 An extension for ScavengeSurvive/inventory that uses SA:MP dialog menus for player interaction with their inventory items.
 
