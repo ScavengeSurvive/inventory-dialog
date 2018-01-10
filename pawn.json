@@ -1,0 +1,13 @@
+{
+	"user": "ScavengeSurvive",
+	"repo": "inventory-dialog",
+	"entry": "test.pwn",
+	"output": "test.amx",
+	"dependencies": [
+		"sampctl/samp-stdlib",
+		"Misiur/YSI-Includes",
+		"Awsomedude/easyDialog",
+		"ScavengeSurvive/inventory",
+		"ScavengeSurvive/item"
+	]
+}
