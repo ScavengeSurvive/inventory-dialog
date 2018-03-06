@@ -1,13 +1,17 @@
 {
-    "user": "ScavengeSurvive",
-    "repo": "inventory-dialog",
-    "entry": "test.pwn",
-    "output": "test.amx",
-    "dependencies": [
-        "sampctl/samp-stdlib",
-        "pawn-lang/YSI-Includes",
-        "Awsomedude/easyDialog",
-        "ScavengeSurvive/inventory",
-        "ScavengeSurvive/item"
-    ]
+	"user": "ScavengeSurvive",
+	"repo": "inventory-dialog",
+	"entry": "test.pwn",
+	"output": "test.amx",
+	"dependencies": [
+		"sampctl/samp-stdlib",
+		"pawn-lang/YSI-Includes",
+		"Awsomedude/easyDialog",
+		"ScavengeSurvive/inventory",
+		"ScavengeSurvive/item",
+		"ScavengeSurvive/tick-difference"
+	],
+	"dev_dependencies": [
+		"ScavengeSurvive/test-boilerplate"
+	]
 }

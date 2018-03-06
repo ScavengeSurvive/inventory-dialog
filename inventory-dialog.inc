@@ -11,6 +11,7 @@
 
 
 #include <a_samp>
+#include <tick-difference>
 #include <item>
 #include <inventory>
 #include <easyDialog>
@@ -200,8 +201,15 @@ stock DisplayPlayerInventory(playerid) {
 }
 
 Dialog:_inv_inventoryList(playerid, response, listitem, inputtext[]) {
+	dbg("inventory-dialog", "_inv_inventoryList",
+		_i("playerid", playerid),
+		_i("response", response),
+		_i("listitem", listitem),
+		_s("inputtext", inputtext));
+
 	if(!response) {
 		ClosePlayerInventory(playerid, true);
+		return 1;
 	}
 
 	if(listitem >= inv_ItemListTotal[playerid]) {
@@ -223,7 +231,7 @@ Dialog:_inv_inventoryList(playerid, response, listitem, inputtext[]) {
 		_inv_displaySlotOptions(playerid, listitem);
 	}
 
-	return 1;
+	return 0;
 }
 
 stock ClosePlayerInventory(playerid, call = false) {
@@ -315,7 +323,7 @@ stock bool:IsPlayerViewingInventory(playerid) {
 		return false;
 	}
 
-	return inv_ViewingInventory[playerid];
+	return !!inv_ViewingInventory[playerid];
 }
 
 
@@ -363,6 +371,12 @@ _inv_displaySlotOptions(playerid, slotid) {
 }
 
 Dialog:_inv_optionsList(playerid, response, listitem, inputtext[]) {
+	dbg("inventory-dialog", "_inv_inventoryList",
+		_i("playerid", playerid),
+		_i("response", response),
+		_i("listitem", listitem),
+		_s("inputtext", inputtext));
+
 	if(!response) {
 		DisplayPlayerInventory(playerid);
 		return 1;
@@ -445,6 +459,11 @@ Dialog:_inv_optionsList(playerid, response, listitem, inputtext[]) {
 
 hook OnPlayerKeyStateChange(playerid, newkeys, oldkeys) {
 	if(!IsPlayerInAnyVehicle(playerid)) {
+		dbg("inventory-dialog", "OnPlayerKeyStateChange",
+			_i("playerid", playerid),
+			_i("newkeys", newkeys),
+			_i("oldkeys", oldkeys));
+
 		if(newkeys & KEY_CTRL_BACK) {
 			DisplayPlayerInventory(playerid);
 		} else if(newkeys & KEY_YES) {
@@ -455,28 +474,36 @@ hook OnPlayerKeyStateChange(playerid, newkeys, oldkeys) {
 	return 1;
 }
 
-_inv_putAway(playerid)
-{
-	if(sif_GetTickCountDiff(GetTickCount(), inv_PutAwayTick[playerid]) < 1000)
+_inv_putAway(playerid) {
+	if(GetTickCountDifference(GetTickCount(), inv_PutAwayTick[playerid]) < 1000) {
 		return;
+	}
 
 	new itemid = GetPlayerItem(playerid);
 
-	if(!IsValidItem(itemid))
+	if(!IsValidItem(itemid)) {
 		return;
+	}
 
 	new
 		itemsize = GetItemTypeSize(GetItemType(itemid)),
-		freeslots = GetInventoryFreeSlots(playerid);
+		freeslots;
+	
+	new ret = GetInventoryFreeSlots(playerid, freeslots);
+	if(ret) {
+		err("failed to get inventory free slots",
+			_i("return", ret));
+		return;
+	}
 
-	if(itemsize > freeslots)
-	{
+	if(itemsize > freeslots) {
 		CallLocalFunction("OnPlayerAddToInventory", "ddd", playerid, itemid, 0);
 		return;
 	}
 
-	if(CallLocalFunction("OnPlayerAddToInventory", "ddd", playerid, itemid, 1))
+	if(CallLocalFunction("OnPlayerAddToInventory", "ddd", playerid, itemid, 1)) {
 		return;
+	}
 
 	inv_PutAwayTick[playerid] = GetTickCount();
 
@@ -487,8 +514,7 @@ _inv_putAway(playerid)
 	return;
 }
 
-timer PlayerPutItemInInventory[300](playerid, itemid)
-{
+timer PlayerPutItemInInventory[300](playerid, itemid) {
 	AddItemToInventory(playerid, itemid);
 	CallLocalFunction("OnPlayerAddedToInventory", "dd", playerid, itemid);
 }

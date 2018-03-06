@@ -1,6 +1,10 @@
 #include "inventory-dialog.inc"
 
+#include <test-boilerplate>
+
 main() {
+	logger_debug("inventory-dialog", true);
+	dbg("inventory-dialog", "debugging logging");
 	new s[1];
 	DisplayPlayerInventory(0);
 	ClosePlayerInventory(0);
