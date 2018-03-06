@@ -1,7 +1,7 @@
 // built-in include guard removal
 // just in case the user has a local dependency with the same file name
 #if defined _inc_inventory_dialog
-    #undef _inc_inventory_dialog
+	#undef _inc_inventory_dialog
 #endif
 // custom include-guard to ensure we don't duplicate
 #if defined _inventory_dialog_included
@@ -114,6 +114,18 @@ forward OnPlayerSelectInventoryOpt(playerid, option);
 When the player selects an option for an item.
 */
 
+forward OnPlayerAddToInventory(playerid, itemid, success);
+/*
+# Called:
+When a player adds an item to their inventory using a key.
+*/
+
+forward OnPlayerAddedToInventory(playerid, itemid);
+/*
+# Called:
+After a player has added an item to their inventory.
+*/
+
 
 static
 	inv_ItemListTotal[MAX_PLAYERS],
@@ -122,7 +134,9 @@ static
 	inv_ExtraItemList[MAX_PLAYERS][128],
 	inv_ExtraItemCount[MAX_PLAYERS],
 	inv_OptionsList[MAX_PLAYERS][128],
-	inv_OptionsCount[MAX_PLAYERS];
+	inv_OptionsCount[MAX_PLAYERS],
+	inv_PutAwayTick[MAX_PLAYERS],
+	Timer:inv_PutAwayTimer[MAX_PLAYERS];
 
 
 stock DisplayPlayerInventory(playerid) {
@@ -298,7 +312,7 @@ stock GetInventoryOptionCount(playerid) {
 
 stock bool:IsPlayerViewingInventory(playerid) {
 	if(!IsPlayerConnected(playerid)) {
-		return 0;
+		return false;
 	}
 
 	return inv_ViewingInventory[playerid];
@@ -427,4 +441,54 @@ Dialog:_inv_optionsList(playerid, response, listitem, inputtext[]) {
 	}
 
 	return 1;
+}
+
+hook OnPlayerKeyStateChange(playerid, newkeys, oldkeys) {
+	if(!IsPlayerInAnyVehicle(playerid)) {
+		if(newkeys & KEY_CTRL_BACK) {
+			DisplayPlayerInventory(playerid);
+		} else if(newkeys & KEY_YES) {
+			_inv_putAway(playerid);
+		}
+	}
+
+	return 1;
+}
+
+_inv_putAway(playerid)
+{
+	if(sif_GetTickCountDiff(GetTickCount(), inv_PutAwayTick[playerid]) < 1000)
+		return;
+
+	new itemid = GetPlayerItem(playerid);
+
+	if(!IsValidItem(itemid))
+		return;
+
+	new
+		itemsize = GetItemTypeSize(GetItemType(itemid)),
+		freeslots = GetInventoryFreeSlots(playerid);
+
+	if(itemsize > freeslots)
+	{
+		CallLocalFunction("OnPlayerAddToInventory", "ddd", playerid, itemid, 0);
+		return;
+	}
+
+	if(CallLocalFunction("OnPlayerAddToInventory", "ddd", playerid, itemid, 1))
+		return;
+
+	inv_PutAwayTick[playerid] = GetTickCount();
+
+	ApplyAnimation(playerid, "PED", "PHONE_IN", 4.0, 1, 0, 0, 0, 300);
+	stop inv_PutAwayTimer[playerid];
+	inv_PutAwayTimer[playerid] = defer PlayerPutItemInInventory(playerid, itemid);
+
+	return;
+}
+
+timer PlayerPutItemInInventory[300](playerid, itemid)
+{
+	AddItemToInventory(playerid, itemid);
+	CallLocalFunction("OnPlayerAddedToInventory", "dd", playerid, itemid);
 }
