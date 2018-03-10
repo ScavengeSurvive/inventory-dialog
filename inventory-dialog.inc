@@ -159,6 +159,7 @@ stock DisplayPlayerInventory(playerid) {
 		return 2;
 	}
 
+	new itemsize;
 	for(new i; i < size; i++) {
 		ret = GetInventorySlotItem(playerid, i, itemid);
 
@@ -168,7 +169,8 @@ stock DisplayPlayerInventory(playerid) {
 
 		GetItemName(itemid, tmp);
 
-		format(list, sizeof(list), "%s[%02d]%s\n", list, GetItemTypeSize(GetItemType(itemid)), tmp);
+		GetItemTypeSize(GetItemType(itemid), itemsize);
+		format(list, sizeof(list), "%s[%02d]%s\n", list, itemsize, tmp);
 		inv_ItemListTotal[playerid]++;
 	}
 
@@ -486,8 +488,10 @@ _inv_putAway(playerid) {
 	}
 
 	new
-		itemsize = GetItemTypeSize(GetItemType(itemid)),
+		itemsize,
 		freeslots;
+	
+	GetItemTypeSize(GetItemType(itemid), itemsize);
 	
 	new ret = GetInventoryFreeSlots(playerid, freeslots);
 	if(ret) {
