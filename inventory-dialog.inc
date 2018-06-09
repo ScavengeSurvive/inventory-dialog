@@ -62,7 +62,8 @@ forward bool:IsPlayerViewingInventory(playerid);
 // Event API
 //
 
-// OnPlayerOpenInventory is called when the player opens their inventory.
+// OnPlayerOpenInventory is called when the player opens their inventory. Return
+// 1 to cancel.
 forward OnPlayerOpenInventory(playerid);
 
 // OnPlayerCloseInventory is called when a player closes their inventory via
