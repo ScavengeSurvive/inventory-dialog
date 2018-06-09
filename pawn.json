@@ -12,6 +12,14 @@
 		"ScavengeSurvive/tick-difference"
 	],
 	"dev_dependencies": [
-		"ScavengeSurvive/test-boilerplate"
-	]
+		"ScavengeSurvive/test-boilerplate",
+		"Southclaws/zcmd",
+		"ScavengeSurvive/test-boilerplate-items"
+	],
+	"runtime": {
+		"version": "0.3.7",
+		"mode": "server",
+		"rcon_password": "password",
+		"port": 7777
+	}
 }
