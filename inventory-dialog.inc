@@ -99,7 +99,7 @@ forward OnPlayerAddedToInventory(playerid, Item:itemid);
 static
 	inv_ItemListTotal[MAX_PLAYERS],
 	inv_SelectedSlot[MAX_PLAYERS],
-	inv_ViewingInventory[MAX_PLAYERS],
+	bool:inv_ViewingInventory[MAX_PLAYERS],
 	inv_ExtraItemList[MAX_PLAYERS][128],
 	inv_ExtraItemCount[MAX_PLAYERS],
 	inv_OptionsList[MAX_PLAYERS][128],
@@ -116,6 +116,9 @@ stock DisplayPlayerInventory(playerid) {
 	if(!IsPlayerConnected(playerid)) {
 		return 1;
 	}
+
+	dbg("inventory-dialog", "showing inventory for player",
+		_i("playerid", playerid));
 
 	new
 		title[18],
@@ -179,6 +182,9 @@ stock ClosePlayerInventory(playerid, call = false) {
 		return 1;
 	}
 
+	dbg("inventory-dialog", "hiding inventory for player",
+		_i("playerid", playerid));
+
 	if(call) {
 		if(CallLocalFunction("OnPlayerCloseInventory", "d", playerid)) {
 			DisplayPlayerInventory(playerid);
@@ -205,6 +211,10 @@ stock AddInventoryListItem(playerid, itemname[]) {
 		return 0;
 	}
 
+	dbg("inventory-dialog", "adding inventory list item",
+		_i("playerid", playerid),
+		_s("itemname", itemname));
+
 	strcat(inv_ExtraItemList[playerid], itemname);
 	strcat(inv_ExtraItemList[playerid], "\n");
 
@@ -215,6 +225,10 @@ stock AddInventoryOption(playerid, option[]) {
 	if(strlen(inv_OptionsList[playerid]) + strlen(option) > sizeof(inv_OptionsList[])) {
 		return 0;
 	}
+
+	dbg("inventory-dialog", "adding inventory item option",
+		_i("playerid", playerid),
+		_s("option", option));
 
 	strcat(inv_OptionsList[playerid], option);
 	strcat(inv_OptionsList[playerid], "\n");
@@ -287,7 +301,7 @@ hook OnPlayerConnect(playerid) {
 }
 
 Dialog:_inv_inventoryList(playerid, response, listitem, inputtext[]) {
-	dbg("inventory-dialog", "_inv_inventoryList",
+	dbg("inventory-dialog", "player responded to inventory dialog",
 		_i("playerid", playerid),
 		_i("response", response),
 		_i("listitem", listitem),
@@ -302,6 +316,7 @@ Dialog:_inv_inventoryList(playerid, response, listitem, inputtext[]) {
 		if(CallLocalFunction("OnPlayerSelectExtraItem", "dd", playerid, listitem - inv_ItemListTotal[playerid])) {
 			DisplayPlayerInventory(playerid);
 		} else {
+			dbg("inventory-dialog", "closing inventory via extra item response");
 			ClosePlayerInventory(playerid);
 		}
 		return 1;
@@ -344,7 +359,7 @@ _inv_displaySlotOptions(playerid, slotid) {
 }
 
 Dialog:_inv_optionsList(playerid, response, listitem, inputtext[]) {
-	dbg("inventory-dialog", "_inv_inventoryList",
+	dbg("inventory-dialog", "player responded to inventory item options",
 		_i("playerid", playerid),
 		_i("response", response),
 		_i("listitem", listitem),
@@ -426,6 +441,7 @@ Dialog:_inv_optionsList(playerid, response, listitem, inputtext[]) {
 			if(CallLocalFunction("OnPlayerSelectInventoryOpt", "dd", playerid, listitem - 3)) {
 				DisplayPlayerInventory(playerid);
 			} else {
+				dbg("inventory-dialog", "closing inventory via option response");
 				ClosePlayerInventory(playerid);
 			}
 		}
