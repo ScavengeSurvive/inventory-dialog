@@ -71,8 +71,8 @@ forward OnPlayerOpenInventory(playerid);
 forward OnPlayerCloseInventory(playerid);
 
 // OnPlayerSelectExtraItem is called when a player selects an inventory list
-// item beyond the list of items, an additional option. Return 1 to keep the
-// inventory dialog open and 0 to close it.
+// item beyond the list of items, an additional option. Return 0 to keep the
+// inventory dialog open and 1 to close it.
 forward OnPlayerSelectExtraItem(playerid, item);
 
 // OnPlayerViewInventoryOpt is called when the player views the options for an
@@ -80,7 +80,7 @@ forward OnPlayerSelectExtraItem(playerid, item);
 forward OnPlayerViewInventoryOpt(playerid);
 
 // OnPlayerSelectInventoryOpt is called when the player selects an option for an
-// item. Return 1 to keep the inventory displayed and 0 to close it.
+// item. Return 0 to keep the inventory displayed and 1 to close it.
 forward OnPlayerSelectInventoryOpt(playerid, option);
 
 // OnPlayerAddToInventory is called when a player adds an item to their
@@ -313,7 +313,7 @@ Dialog:_inv_inventoryList(playerid, response, listitem, inputtext[]) {
 	}
 
 	if(listitem >= inv_ItemListTotal[playerid]) {
-		if(CallLocalFunction("OnPlayerSelectExtraItem", "dd", playerid, listitem - inv_ItemListTotal[playerid])) {
+		if(!CallLocalFunction("OnPlayerSelectExtraItem", "dd", playerid, listitem - inv_ItemListTotal[playerid])) {
 			DisplayPlayerInventory(playerid);
 		} else {
 			dbg("inventory-dialog", "closing inventory via extra item response");
@@ -438,7 +438,7 @@ Dialog:_inv_optionsList(playerid, response, listitem, inputtext[]) {
 			}
 		}
 		default: {
-			if(CallLocalFunction("OnPlayerSelectInventoryOpt", "dd", playerid, listitem - 3)) {
+			if(!CallLocalFunction("OnPlayerSelectInventoryOpt", "dd", playerid, listitem - 3)) {
 				DisplayPlayerInventory(playerid);
 			} else {
 				dbg("inventory-dialog", "closing inventory via option response");
