@@ -314,6 +314,7 @@ Dialog:_inv_inventoryList(playerid, response, listitem, inputtext[]) {
 
 	if(listitem >= inv_ItemListTotal[playerid]) {
 		if(!CallLocalFunction("OnPlayerSelectExtraItem", "dd", playerid, listitem - inv_ItemListTotal[playerid])) {
+			dbg("inventory-dialog", "opening inventory via extra item response");
 			DisplayPlayerInventory(playerid);
 		} else {
 			dbg("inventory-dialog", "closing inventory via extra item response");
@@ -439,6 +440,7 @@ Dialog:_inv_optionsList(playerid, response, listitem, inputtext[]) {
 		}
 		default: {
 			if(!CallLocalFunction("OnPlayerSelectInventoryOpt", "dd", playerid, listitem - 3)) {
+				dbg("inventory-dialog", "opening inventory via extra item response");
 				DisplayPlayerInventory(playerid);
 			} else {
 				dbg("inventory-dialog", "closing inventory via option response");
