@@ -439,7 +439,7 @@ Dialog:_inv_optionsList(playerid, response, listitem, inputtext[]) {
 			}
 		}
 		default: {
-			if(!CallLocalFunction("OnPlayerSelectInventoryOpt", "dd", playerid, listitem - 3)) {
+			if(!CallLocalFunction("OnPlayerSelectInvOpt", "dd", playerid, listitem - 3)) {
 				dbg("inventory-dialog", "opening inventory via extra item response");
 				DisplayPlayerInventory(playerid);
 			} else {
