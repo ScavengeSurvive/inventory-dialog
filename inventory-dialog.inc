@@ -14,8 +14,9 @@
 #include <tick-difference>
 #include <item>
 #include <inventory>
-#include <easyDialog>
-#include <YSI\y_hooks>
+#include <YSI_Visual\y_dialog>
+
+#include <YSI_Coding\y_hooks>
 
 
 // -
@@ -35,11 +36,11 @@ forward GetPlayerSelectedInventorySlot(playerid);
 
 // AddInventoryListItem adds a list item to the inventory dialog for additional
 // actions. This should only ever be used in `OnPlayerOpenInventory`.
-forward AddInventoryListItem(playerid, itemname[]);
+forward AddInventoryListItem(playerid, const itemname[]);
 
 // AddInventoryOption adds an inventory option to an item option menu. This
 // should only ever be used in `OnPlayerViewInventoryOpt`.
-forward AddInventoryOption(playerid, option[]);
+forward AddInventoryOption(playerid, const option[]);
 
 // GetInventoryListItems returns the available inventory list items.
 forward GetInventoryListItems(playerid, list[], len = sizeof list);
@@ -170,7 +171,43 @@ stock DisplayPlayerInventory(playerid) {
 
 	format(title, sizeof(title), "Inventory (%d/%d)", size - slots, size);
 
-	Dialog_Show(playerid, _inv_inventoryList, DIALOG_STYLE_LIST, title, list, "Options", "Close");
+	inline Response(pid, dialogid, response, listitem, string:inputtext[]) {
+		dbg("inventory-dialog", "player responded to inventory dialog",
+			_i("playerid", playerid),
+			_i("response", response),
+			_i("listitem", listitem),
+			_s("inputtext", inputtext));
+
+		if(!response) {
+			ClosePlayerInventory(playerid, true);
+			return 1;
+		}
+
+		if(listitem >= inv_ItemListTotal[playerid]) {
+			if(!CallLocalFunction("OnPlayerSelectExtraItem", "dd", playerid, listitem - inv_ItemListTotal[playerid])) {
+				dbg("inventory-dialog", "opening inventory via extra item response");
+				DisplayPlayerInventory(playerid);
+			} else {
+				dbg("inventory-dialog", "closing inventory via extra item response");
+				ClosePlayerInventory(playerid);
+			}
+			return 1;
+		}
+
+		new
+			Item:itemid,
+			ret;
+		ret = GetInventorySlotItem(playerid, listitem, itemid);
+		if(ret || !IsValidItem(itemid)) {
+			DisplayPlayerInventory(playerid);
+		} else {
+			inv_SelectedSlot[playerid] = listitem;
+			_inv_displaySlotOptions(playerid, listitem);
+		}
+
+		return 0;
+	}
+	Dialog_ShowCallback(playerid, using inline Response, DIALOG_STYLE_LIST, title, list, "Options", "Close");
 
 	inv_ViewingInventory[playerid] = true;
 
@@ -300,43 +337,6 @@ hook OnPlayerConnect(playerid) {
 	}
 }
 
-Dialog:_inv_inventoryList(playerid, response, listitem, inputtext[]) {
-	dbg("inventory-dialog", "player responded to inventory dialog",
-		_i("playerid", playerid),
-		_i("response", response),
-		_i("listitem", listitem),
-		_s("inputtext", inputtext));
-
-	if(!response) {
-		ClosePlayerInventory(playerid, true);
-		return 1;
-	}
-
-	if(listitem >= inv_ItemListTotal[playerid]) {
-		if(!CallLocalFunction("OnPlayerSelectExtraItem", "dd", playerid, listitem - inv_ItemListTotal[playerid])) {
-			dbg("inventory-dialog", "opening inventory via extra item response");
-			DisplayPlayerInventory(playerid);
-		} else {
-			dbg("inventory-dialog", "closing inventory via extra item response");
-			ClosePlayerInventory(playerid);
-		}
-		return 1;
-	}
-
-	new
-		Item:itemid,
-		ret;
-	ret = GetInventorySlotItem(playerid, listitem, itemid);
-	if(ret || !IsValidItem(itemid)) {
-		DisplayPlayerInventory(playerid);
-	} else {
-		inv_SelectedSlot[playerid] = listitem;
-		_inv_displaySlotOptions(playerid, listitem);
-	}
-
-	return 0;
-}
-
 _inv_displaySlotOptions(playerid, slotid) {
 	new
 		name[MAX_ITEM_NAME + MAX_ITEM_TEXT],
@@ -354,102 +354,101 @@ _inv_displaySlotOptions(playerid, slotid) {
 
 	CallLocalFunction("OnPlayerViewInventoryOpt", "d", playerid);
 
-	Dialog_Show(playerid, _inv_optionsList, DIALOG_STYLE_LIST, name, inv_OptionsList[playerid], "Accept", "Back");
+	inline Response(pid, dialogid, response, listitem, string:inputtext[]) {
+		dbg("inventory-dialog", "player responded to inventory item options",
+			_i("playerid", playerid),
+			_i("response", response),
+			_i("listitem", listitem),
+			_s("inputtext", inputtext));
 
-	return 0;
-}
+		if(!response) {
+			DisplayPlayerInventory(playerid);
+			return 1;
+		}
 
-Dialog:_inv_optionsList(playerid, response, listitem, inputtext[]) {
-	dbg("inventory-dialog", "player responded to inventory item options",
-		_i("playerid", playerid),
-		_i("response", response),
-		_i("listitem", listitem),
-		_s("inputtext", inputtext));
+		switch(listitem) {
+			case 0: {
+				if(GetPlayerItem(playerid) == INVALID_ITEM_ID) {
+					new
+						Item:itemid,
+						ret;
+					
+					ret = GetInventorySlotItem(playerid, inv_SelectedSlot[playerid], itemid);
+					if(ret) {
+						err("failed to get inventory slot item", _i("playerid", playerid), _i("slotid", inv_SelectedSlot[playerid]), _i("ret", ret));
+						return 1;
+					}
 
-	if(!response) {
-		DisplayPlayerInventory(playerid);
+					RemoveItemFromInventory(playerid, inv_SelectedSlot[playerid]);
+					GiveWorldItemToPlayer(playerid, itemid, 1);
+					DisplayPlayerInventory(playerid);
+				} else {
+					ShowActionText(playerid, "You are already holding something", 3000, 200);
+					DisplayPlayerInventory(playerid);
+				}
+			}
+			case 1: {
+				if(GetPlayerItem(playerid) == INVALID_ITEM_ID) {
+					new
+						Item:itemid,
+						ret;
+					
+					ret = GetInventorySlotItem(playerid, inv_SelectedSlot[playerid], itemid);
+					if(ret) {
+						err("failed to get inventory slot item", _i("playerid", playerid), _i("slotid", inv_SelectedSlot[playerid]), _i("ret", ret));
+						return 1;
+					}
+
+					RemoveItemFromInventory(playerid, inv_SelectedSlot[playerid]);
+					GiveWorldItemToPlayer(playerid, itemid, 1);
+
+					PlayerUseItem(playerid);
+
+					ClosePlayerInventory(playerid, true);
+				} else {
+					ShowActionText(playerid, "You are already holding something", 3000, 200);
+					DisplayPlayerInventory(playerid);
+				}
+			}
+			case 2: {
+				if(GetPlayerItem(playerid) == INVALID_ITEM_ID) {
+					new
+						Item:itemid,
+						ret;
+					
+					ret = GetInventorySlotItem(playerid, inv_SelectedSlot[playerid], itemid);
+					if(ret) {
+						err("failed to get inventory slot item", _i("playerid", playerid), _i("slotid", inv_SelectedSlot[playerid]), _i("ret", ret));
+						return 1;
+					}
+
+					RemoveItemFromInventory(playerid, inv_SelectedSlot[playerid]);
+					GiveWorldItemToPlayer(playerid, itemid, 1);
+
+					PlayerDropItem(playerid);
+
+					ClosePlayerInventory(playerid, true);
+				} else {
+					ShowActionText(playerid, "You are already holding something", 3000, 200);
+					DisplayPlayerInventory(playerid);
+				}
+			}
+			default: {
+				if(!CallLocalFunction("OnPlayerSelectInventoryOpt", "dd", playerid, listitem - 3)) {
+					dbg("inventory-dialog", "opening inventory via extra item response");
+					DisplayPlayerInventory(playerid);
+				} else {
+					dbg("inventory-dialog", "closing inventory via option response");
+					ClosePlayerInventory(playerid);
+				}
+			}
+		}
+
 		return 1;
 	}
+	Dialog_ShowCallback(playerid, using inline Response, DIALOG_STYLE_LIST, title, list, "Options", "Close");
 
-	switch(listitem) {
-		case 0: {
-			if(GetPlayerItem(playerid) == INVALID_ITEM_ID) {
-				new
-					Item:itemid,
-					ret;
-				
-				ret = GetInventorySlotItem(playerid, inv_SelectedSlot[playerid], itemid);
-				if(ret) {
-					err("failed to get inventory slot item", _i("playerid", playerid), _i("slotid", inv_SelectedSlot[playerid]), _i("ret", ret));
-					return 1;
-				}
-
-				RemoveItemFromInventory(playerid, inv_SelectedSlot[playerid]);
-				GiveWorldItemToPlayer(playerid, itemid, 1);
-				DisplayPlayerInventory(playerid);
-			} else {
-				ShowActionText(playerid, "You are already holding something", 3000, 200);
-				DisplayPlayerInventory(playerid);
-			}
-		}
-		case 1: {
-			if(GetPlayerItem(playerid) == INVALID_ITEM_ID) {
-				new
-					Item:itemid,
-					ret;
-				
-				ret = GetInventorySlotItem(playerid, inv_SelectedSlot[playerid], itemid);
-				if(ret) {
-					err("failed to get inventory slot item", _i("playerid", playerid), _i("slotid", inv_SelectedSlot[playerid]), _i("ret", ret));
-					return 1;
-				}
-
-				RemoveItemFromInventory(playerid, inv_SelectedSlot[playerid]);
-				GiveWorldItemToPlayer(playerid, itemid, 1);
-
-				PlayerUseItem(playerid);
-
-				ClosePlayerInventory(playerid, true);
-			} else {
-				ShowActionText(playerid, "You are already holding something", 3000, 200);
-				DisplayPlayerInventory(playerid);
-			}
-		}
-		case 2: {
-			if(GetPlayerItem(playerid) == INVALID_ITEM_ID) {
-				new
-					Item:itemid,
-					ret;
-				
-				ret = GetInventorySlotItem(playerid, inv_SelectedSlot[playerid], itemid);
-				if(ret) {
-					err("failed to get inventory slot item", _i("playerid", playerid), _i("slotid", inv_SelectedSlot[playerid]), _i("ret", ret));
-					return 1;
-				}
-
-				RemoveItemFromInventory(playerid, inv_SelectedSlot[playerid]);
-				GiveWorldItemToPlayer(playerid, itemid, 1);
-
-				PlayerDropItem(playerid);
-
-				ClosePlayerInventory(playerid, true);
-			} else {
-				ShowActionText(playerid, "You are already holding something", 3000, 200);
-				DisplayPlayerInventory(playerid);
-			}
-		}
-		default: {
-			if(!CallLocalFunction("OnPlayerSelectInventoryOpt", "dd", playerid, listitem - 3)) {
-				dbg("inventory-dialog", "opening inventory via extra item response");
-				DisplayPlayerInventory(playerid);
-			} else {
-				dbg("inventory-dialog", "closing inventory via option response");
-				ClosePlayerInventory(playerid);
-			}
-		}
-	}
-
-	return 1;
+	return 0;
 }
 
 hook OnPlayerKeyStateChange(playerid, newkeys, oldkeys) {

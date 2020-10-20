@@ -6,7 +6,6 @@
 	"dependencies": [
 		"sampctl/samp-stdlib",
 		"pawn-lang/YSI-Includes",
-		"Awsomedude/easyDialog",
 		"ScavengeSurvive/inventory",
 		"ScavengeSurvive/item",
 		"ScavengeSurvive/tick-difference"
