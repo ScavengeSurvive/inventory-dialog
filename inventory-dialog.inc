@@ -118,8 +118,8 @@ stock DisplayPlayerInventory(playerid) {
 		return 1;
 	}
 
-	dbg("inventory-dialog", "showing inventory for player",
-		_i("playerid", playerid));
+	Logger_Dbg("inventory-dialog", "showing inventory for player",
+		Logger_I("playerid", playerid));
 
 	new
 		title[18],
@@ -130,16 +130,16 @@ stock DisplayPlayerInventory(playerid) {
 
 	inv_ItemListTotal[playerid] = 0;
 
-	new ret = GetPlayerInventorySize(playerid, size);
-	if(ret) {
+	new ret_outer = GetPlayerInventorySize(playerid, size);
+	if(ret_outer) {
 		return 2;
 	}
 
 	new itemsize;
 	for(new i; i < size; i++) {
-		ret = GetInventorySlotItem(playerid, i, itemid);
+		ret_outer = GetInventorySlotItem(playerid, i, itemid);
 
-		if(!IsValidItem(itemid) || ret) {
+		if(!IsValidItem(itemid) || ret_outer) {
 			break;
 		}
 
@@ -151,7 +151,7 @@ stock DisplayPlayerInventory(playerid) {
 	}
 
 	new slots;
-	ret = GetInventoryFreeSlots(playerid, slots);
+	ret_outer = GetInventoryFreeSlots(playerid, slots);
 
 	for(new i; i < slots; i++) {
 		strcat(list, "<Empty>\n");
@@ -172,11 +172,13 @@ stock DisplayPlayerInventory(playerid) {
 	format(title, sizeof(title), "Inventory (%d/%d)", size - slots, size);
 
 	inline Response(pid, dialogid, response, listitem, string:inputtext[]) {
-		dbg("inventory-dialog", "player responded to inventory dialog",
-			_i("playerid", playerid),
-			_i("response", response),
-			_i("listitem", listitem),
-			_s("inputtext", inputtext));
+		#pragma unused pid, dialogid
+
+		Logger_Dbg("inventory-dialog", "player responded to inventory dialog",
+			Logger_I("playerid", playerid),
+			Logger_I("response", response),
+			Logger_I("listitem", listitem),
+			Logger_S("inputtext", inputtext));
 
 		if(!response) {
 			ClosePlayerInventory(playerid, true);
@@ -185,20 +187,20 @@ stock DisplayPlayerInventory(playerid) {
 
 		if(listitem >= inv_ItemListTotal[playerid]) {
 			if(!CallLocalFunction("OnPlayerSelectExtraItem", "dd", playerid, listitem - inv_ItemListTotal[playerid])) {
-				dbg("inventory-dialog", "opening inventory via extra item response");
+				Logger_Dbg("inventory-dialog", "opening inventory via extra item response");
 				DisplayPlayerInventory(playerid);
 			} else {
-				dbg("inventory-dialog", "closing inventory via extra item response");
+				Logger_Dbg("inventory-dialog", "closing inventory via extra item response");
 				ClosePlayerInventory(playerid);
 			}
 			return 1;
 		}
 
 		new
-			Item:itemid,
+			Item:itemid2,
 			ret;
-		ret = GetInventorySlotItem(playerid, listitem, itemid);
-		if(ret || !IsValidItem(itemid)) {
+		ret = GetInventorySlotItem(playerid, listitem, itemid2);
+		if(ret || !IsValidItem(itemid2)) {
 			DisplayPlayerInventory(playerid);
 		} else {
 			inv_SelectedSlot[playerid] = listitem;
@@ -219,8 +221,8 @@ stock ClosePlayerInventory(playerid, call = false) {
 		return 1;
 	}
 
-	dbg("inventory-dialog", "hiding inventory for player",
-		_i("playerid", playerid));
+	Logger_Dbg("inventory-dialog", "hiding inventory for player",
+		Logger_I("playerid", playerid));
 
 	if(call) {
 		if(CallLocalFunction("OnPlayerCloseInventory", "d", playerid)) {
@@ -243,14 +245,14 @@ stock GetPlayerSelectedInventorySlot(playerid) {
 	return inv_SelectedSlot[playerid];
 }
 
-stock AddInventoryListItem(playerid, itemname[]) {
+stock AddInventoryListItem(playerid, const itemname[]) {
 	if(strlen(inv_ExtraItemList[playerid]) + strlen(itemname) > sizeof(inv_ExtraItemList[])) {
 		return 0;
 	}
 
-	dbg("inventory-dialog", "adding inventory list item",
-		_i("playerid", playerid),
-		_s("itemname", itemname));
+	Logger_Dbg("inventory-dialog", "adding inventory list item",
+		Logger_I("playerid", playerid),
+		Logger_S("itemname", itemname));
 
 	strcat(inv_ExtraItemList[playerid], itemname);
 	strcat(inv_ExtraItemList[playerid], "\n");
@@ -258,14 +260,14 @@ stock AddInventoryListItem(playerid, itemname[]) {
 	return inv_ExtraItemCount[playerid]++;
 }
 
-stock AddInventoryOption(playerid, option[]) {
+stock AddInventoryOption(playerid, const option[]) {
 	if(strlen(inv_OptionsList[playerid]) + strlen(option) > sizeof(inv_OptionsList[])) {
 		return 0;
 	}
 
-	dbg("inventory-dialog", "adding inventory item option",
-		_i("playerid", playerid),
-		_s("option", option));
+	Logger_Dbg("inventory-dialog", "adding inventory item option",
+		Logger_I("playerid", playerid),
+		Logger_S("option", option));
 
 	strcat(inv_OptionsList[playerid], option);
 	strcat(inv_OptionsList[playerid], "\n");
@@ -341,10 +343,10 @@ _inv_displaySlotOptions(playerid, slotid) {
 	new
 		name[MAX_ITEM_NAME + MAX_ITEM_TEXT],
 		Item:itemid,
-		ret;
+		ret_outer;
 	
-	ret = GetInventorySlotItem(playerid, slotid, itemid);
-	if(ret) {
+	ret_outer = GetInventorySlotItem(playerid, slotid, itemid);
+	if(ret_outer) {
 		return 1;
 	}
 
@@ -355,11 +357,13 @@ _inv_displaySlotOptions(playerid, slotid) {
 	CallLocalFunction("OnPlayerViewInventoryOpt", "d", playerid);
 
 	inline Response(pid, dialogid, response, listitem, string:inputtext[]) {
-		dbg("inventory-dialog", "player responded to inventory item options",
-			_i("playerid", playerid),
-			_i("response", response),
-			_i("listitem", listitem),
-			_s("inputtext", inputtext));
+		#pragma unused pid, dialogid
+
+		Logger_Dbg("inventory-dialog", "player responded to inventory item options",
+			Logger_I("playerid", playerid),
+			Logger_I("response", response),
+			Logger_I("listitem", listitem),
+			Logger_S("inputtext", inputtext));
 
 		if(!response) {
 			DisplayPlayerInventory(playerid);
@@ -370,17 +374,17 @@ _inv_displaySlotOptions(playerid, slotid) {
 			case 0: {
 				if(GetPlayerItem(playerid) == INVALID_ITEM_ID) {
 					new
-						Item:itemid,
+						Item:itemid2,
 						ret;
 					
-					ret = GetInventorySlotItem(playerid, inv_SelectedSlot[playerid], itemid);
+					ret = GetInventorySlotItem(playerid, inv_SelectedSlot[playerid], itemid2);
 					if(ret) {
-						err("failed to get inventory slot item", _i("playerid", playerid), _i("slotid", inv_SelectedSlot[playerid]), _i("ret", ret));
+						Logger_Err("failed to get inventory slot item", Logger_I("playerid", playerid), Logger_I("slotid", inv_SelectedSlot[playerid]), Logger_I("ret", ret));
 						return 1;
 					}
 
 					RemoveItemFromInventory(playerid, inv_SelectedSlot[playerid]);
-					GiveWorldItemToPlayer(playerid, itemid, 1);
+					GiveWorldItemToPlayer(playerid, itemid2, 1);
 					DisplayPlayerInventory(playerid);
 				} else {
 					ShowActionText(playerid, "You are already holding something", 3000, 200);
@@ -390,17 +394,17 @@ _inv_displaySlotOptions(playerid, slotid) {
 			case 1: {
 				if(GetPlayerItem(playerid) == INVALID_ITEM_ID) {
 					new
-						Item:itemid,
+						Item:itemid2,
 						ret;
 					
-					ret = GetInventorySlotItem(playerid, inv_SelectedSlot[playerid], itemid);
+					ret = GetInventorySlotItem(playerid, inv_SelectedSlot[playerid], itemid2);
 					if(ret) {
-						err("failed to get inventory slot item", _i("playerid", playerid), _i("slotid", inv_SelectedSlot[playerid]), _i("ret", ret));
+						Logger_Err("failed to get inventory slot item", Logger_I("playerid", playerid), Logger_I("slotid", inv_SelectedSlot[playerid]), Logger_I("ret", ret));
 						return 1;
 					}
 
 					RemoveItemFromInventory(playerid, inv_SelectedSlot[playerid]);
-					GiveWorldItemToPlayer(playerid, itemid, 1);
+					GiveWorldItemToPlayer(playerid, itemid2, 1);
 
 					PlayerUseItem(playerid);
 
@@ -413,17 +417,17 @@ _inv_displaySlotOptions(playerid, slotid) {
 			case 2: {
 				if(GetPlayerItem(playerid) == INVALID_ITEM_ID) {
 					new
-						Item:itemid,
+						Item:itemid2,
 						ret;
 					
-					ret = GetInventorySlotItem(playerid, inv_SelectedSlot[playerid], itemid);
+					ret = GetInventorySlotItem(playerid, inv_SelectedSlot[playerid], itemid2);
 					if(ret) {
-						err("failed to get inventory slot item", _i("playerid", playerid), _i("slotid", inv_SelectedSlot[playerid]), _i("ret", ret));
+						Logger_Err("failed to get inventory slot item", Logger_I("playerid", playerid), Logger_I("slotid", inv_SelectedSlot[playerid]), Logger_I("ret", ret));
 						return 1;
 					}
 
 					RemoveItemFromInventory(playerid, inv_SelectedSlot[playerid]);
-					GiveWorldItemToPlayer(playerid, itemid, 1);
+					GiveWorldItemToPlayer(playerid, itemid2, 1);
 
 					PlayerDropItem(playerid);
 
@@ -435,10 +439,10 @@ _inv_displaySlotOptions(playerid, slotid) {
 			}
 			default: {
 				if(!CallLocalFunction("OnPlayerSelectInventoryOpt", "dd", playerid, listitem - 3)) {
-					dbg("inventory-dialog", "opening inventory via extra item response");
+					Logger_Dbg("inventory-dialog", "opening inventory via extra item response");
 					DisplayPlayerInventory(playerid);
 				} else {
-					dbg("inventory-dialog", "closing inventory via option response");
+					Logger_Dbg("inventory-dialog", "closing inventory via option response");
 					ClosePlayerInventory(playerid);
 				}
 			}
@@ -446,17 +450,17 @@ _inv_displaySlotOptions(playerid, slotid) {
 
 		return 1;
 	}
-	Dialog_ShowCallback(playerid, using inline Response, DIALOG_STYLE_LIST, title, list, "Options", "Close");
+	Dialog_ShowCallback(playerid, using inline Response, DIALOG_STYLE_LIST, name, inv_OptionsList[playerid], "Options", "Close");
 
 	return 0;
 }
 
 hook OnPlayerKeyStateChange(playerid, newkeys, oldkeys) {
 	if(!IsPlayerInAnyVehicle(playerid)) {
-		dbg("inventory-dialog", "OnPlayerKeyStateChange",
-			_i("playerid", playerid),
-			_i("newkeys", newkeys),
-			_i("oldkeys", oldkeys));
+		Logger_Dbg("inventory-dialog", "OnPlayerKeyStateChange",
+			Logger_I("playerid", playerid),
+			Logger_I("newkeys", newkeys),
+			Logger_I("oldkeys", oldkeys));
 
 		if(newkeys & KEY_CTRL_BACK) {
 			DisplayPlayerInventory(playerid);
@@ -487,8 +491,8 @@ _inv_putAway(playerid) {
 	
 	new ret = GetInventoryFreeSlots(playerid, freeslots);
 	if(ret) {
-		err("failed to get inventory free slots",
-			_i("return", ret));
+		Logger_Err("failed to get inventory free slots",
+			Logger_I("return", ret));
 		return;
 	}
 
