@@ -9,6 +9,13 @@
 #endif
 #define _inventory_dialog_included
 
+#if !defined INV_KEY_OPEN
+    #define INV_KEY_OPEN KEY_CTRL_BACK
+#endif
+
+#if !defined INV_KEY_PUTAWAY
+    #define INV_KEY_PUTAWAY KEY_YES
+#endif
 
 #include <a_samp>
 #include <tick-difference>
@@ -462,9 +469,9 @@ hook OnPlayerKeyStateChange(playerid, newkeys, oldkeys) {
 			Logger_I("newkeys", newkeys),
 			Logger_I("oldkeys", oldkeys));
 
-		if(newkeys & KEY_CTRL_BACK) {
+		if(newkeys & INV_KEY_OPEN) {
 			DisplayPlayerInventory(playerid);
-		} else if(newkeys & KEY_YES) {
+		} else if(newkeys & INV_KEY_PUTAWAY) {
 			_inv_putAway(playerid);
 		}
 	}
