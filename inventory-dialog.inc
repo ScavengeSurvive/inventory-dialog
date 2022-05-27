@@ -507,7 +507,7 @@ _inv_putAway(playerid) {
 
 	inv_PutAwayTick[playerid] = GetTickCount();
 
-	ApplyAnimation(playerid, "PED", "PHONE_IN", 4.0, 1, 0, 0, 0, 300);
+	ApplyAnimation(playerid, "PED", "PHONE_IN", 4.0, true, false, false, false, 300);
 	stop inv_PutAwayTimer[playerid];
 	inv_PutAwayTimer[playerid] = defer PlayerPutItemInInventory(playerid, _:itemid);
 
@@ -518,3 +518,4 @@ timer PlayerPutItemInInventory[300](playerid, itemid) {
 	AddItemToInventory(playerid, Item:itemid);
 	CallLocalFunction("OnPlayerAddedToInventory", "dd", playerid, itemid);
 }
+
