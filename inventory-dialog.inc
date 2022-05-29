@@ -9,6 +9,13 @@
 #endif
 #define _inventory_dialog_included
 
+#if !defined INV_KEY_OPEN
+    #define INV_KEY_OPEN KEY_CTRL_BACK
+#endif
+
+#if !defined INV_KEY_PUTAWAY
+    #define INV_KEY_PUTAWAY KEY_YES
+#endif
 
 #include <a_samp>
 #include <tick-difference>
@@ -462,9 +469,9 @@ hook OnPlayerKeyStateChange(playerid, newkeys, oldkeys) {
 			Logger_I("newkeys", newkeys),
 			Logger_I("oldkeys", oldkeys));
 
-		if(newkeys & KEY_CTRL_BACK) {
+		if(newkeys & INV_KEY_OPEN) {
 			DisplayPlayerInventory(playerid);
-		} else if(newkeys & KEY_YES) {
+		} else if(newkeys & INV_KEY_PUTAWAY) {
 			_inv_putAway(playerid);
 		}
 	}
@@ -507,7 +514,7 @@ _inv_putAway(playerid) {
 
 	inv_PutAwayTick[playerid] = GetTickCount();
 
-	ApplyAnimation(playerid, "PED", "PHONE_IN", 4.0, 1, 0, 0, 0, 300);
+	ApplyAnimation(playerid, "PED", "PHONE_IN", 4.0, true, false, false, false, 300);
 	stop inv_PutAwayTimer[playerid];
 	inv_PutAwayTimer[playerid] = defer PlayerPutItemInInventory(playerid, _:itemid);
 
@@ -518,3 +525,4 @@ timer PlayerPutItemInInventory[300](playerid, itemid) {
 	AddItemToInventory(playerid, Item:itemid);
 	CallLocalFunction("OnPlayerAddedToInventory", "dd", playerid, itemid);
 }
+
