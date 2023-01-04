@@ -7,6 +7,7 @@
 		"sampctl/samp-stdlib",
 		"pawn-lang/YSI-Includes",
 		"ScavengeSurvive/inventory",
+		"ScavengeSurvive/container-dialog",
 		"ScavengeSurvive/item",
 		"ScavengeSurvive/tick-difference"
 	],
