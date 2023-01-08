@@ -21,6 +21,7 @@
 #include <tick-difference>
 #include <item>
 #include <inventory>
+#include <container-dialog>
 #include <YSI_Visual\y_dialog>
 
 #include <YSI_Coding\y_hooks>
@@ -238,11 +239,7 @@ stock ClosePlayerInventory(playerid, call = false) {
 		}
 	}
 
-	#if defined HidePlayerDialog
-		HidePlayerDialog(playerid);
-	#else
-		ShowPlayerDialog(playerid, -1, 0, NULL, NULL, NULL, NULL);
-	#endif
+	ClosePlayerContainer(playerid);
 	inv_ViewingInventory[playerid] = false;
 
 	return 0;
