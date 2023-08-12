@@ -64,7 +64,7 @@ forward GetInventoryListItemCount(playerid);
 forward GetInventoryOptionCount(playerid);
 
 // bool returns true if the player is in the inventory screen.
-forward bool:IsPlayerViewingInventory(playerid);
+forward IsPlayerViewingInventory(playerid);
 
 
 // -
@@ -319,7 +319,7 @@ stock GetInventoryOptionCount(playerid) {
 	return inv_OptionsCount[playerid];
 }
 
-stock bool:IsPlayerViewingInventory(playerid) {
+stock IsPlayerViewingInventory(playerid) {
 	if(!IsPlayerConnected(playerid)) {
 		return false;
 	}
@@ -463,21 +463,47 @@ _inv_displaySlotOptions(playerid, slotid) {
 	return 0;
 }
 
-hook OnPlayerKeyStateChange(playerid, newkeys, oldkeys) {
-	if(!IsPlayerInAnyVehicle(playerid)) {
-		Logger_Dbg("inventory-dialog", "OnPlayerKeyStateChange",
-			Logger_I("playerid", playerid),
-			Logger_I("newkeys", newkeys),
-			Logger_I("oldkeys", oldkeys));
+#if defined _INC_open_mp
+    hook OnPlayerKeyStateChange(playerid, KEY:newkeys, KEY:oldkeys) 
+	{
+		if (!IsPlayerInAnyVehicle(playerid))
+        {
+			Logger_Dbg("inventory-dialog", "OnPlayerKeyStateChange",
+					Logger_I("playerid", playerid),
+					Logger_I("newkeys", newkeys),
+					Logger_I("oldkeys", oldkeys));
 
-		if(newkeys & INV_KEY_OPEN) {
-			DisplayPlayerInventory(playerid);
-		} else if(newkeys & INV_KEY_PUTAWAY) {
-			_inv_putAway(playerid);
+			if (newkeys & INV_KEY_OPEN) {
+				DisplayPlayerInventory(playerid);
+			} else if (newkeys & INV_KEY_PUTAWAY) {
+				_inv_putAway(playerid);
+			}
 		}
+		return 1;
 	}
+#else
+    hook OnPlayerKeyStateChange(playerid, KEY:newkeys, KEY:oldkeys)
+	{
+		if (!IsPlayerInAnyVehicle(playerid)) {
+			Logger_Dbg("inventory-dialog", "OnPlayerKeyStateChange",
+					Logger_I("playerid", playerid),
+					Logger_I("newkeys", newkeys),
+					Logger_I("oldkeys", oldkeys));
 
-	return 1;
+			if (newkeys & INV_KEY_OPEN) {
+				DisplayPlayerInventory(playerid);
+			} else if (newkeys & INV_KEY_PUTAWAY) {
+				_inv_putAway(playerid);
+			}
+		}
+		return 1;
+	}
+#endif
+
+timer PlayerPutItemInInventory[300](playerid, itemid)
+{
+    AddItemToInventory(playerid, Item:itemid);
+    CallLocalFunction("OnPlayerAddedToInventory", "dd", playerid, itemid);
 }
 
 _inv_putAway(playerid) {
@@ -520,10 +546,5 @@ _inv_putAway(playerid) {
 	inv_PutAwayTimer[playerid] = defer PlayerPutItemInInventory(playerid, _:itemid);
 
 	return;
-}
-
-timer PlayerPutItemInInventory[300](playerid, itemid) {
-	AddItemToInventory(playerid, Item:itemid);
-	CallLocalFunction("OnPlayerAddedToInventory", "dd", playerid, itemid);
 }
 
