@@ -480,6 +480,11 @@ hook OnPlayerKeyStateChange(playerid, newkeys, oldkeys) {
 	return 1;
 }
 
+timer PlayerPutItemInInventory[300](playerid, itemid) {
+	AddItemToInventory(playerid, Item:itemid);
+	CallLocalFunction("OnPlayerAddedToInventory", "dd", playerid, itemid);
+}
+
 _inv_putAway(playerid) {
 	if(GetTickCountDifference(GetTickCount(), inv_PutAwayTick[playerid]) < 1000) {
 		return;
@@ -520,10 +525,5 @@ _inv_putAway(playerid) {
 	inv_PutAwayTimer[playerid] = defer PlayerPutItemInInventory(playerid, _:itemid);
 
 	return;
-}
-
-timer PlayerPutItemInInventory[300](playerid, itemid) {
-	AddItemToInventory(playerid, Item:itemid);
-	CallLocalFunction("OnPlayerAddedToInventory", "dd", playerid, itemid);
 }
 
