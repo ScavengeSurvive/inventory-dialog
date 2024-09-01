@@ -17,7 +17,16 @@
     #define INV_KEY_PUTAWAY KEY_YES
 #endif
 
-#include <a_samp>
+#tryinclude <open.mp>
+
+#if !defined _INC_open_mp
+	#include <a_samp>
+
+	#if !defined KEY
+		#define KEY: _:
+	#endif
+#endif
+
 #include <tick-difference>
 #include <item>
 #include <inventory>
@@ -463,7 +472,7 @@ _inv_displaySlotOptions(playerid, slotid) {
 	return 0;
 }
 
-hook OnPlayerKeyStateChange(playerid, newkeys, oldkeys) {
+hook OnPlayerKeyStateChange(playerid, KEY:newkeys, KEY:oldkeys) {
 	if(!IsPlayerInAnyVehicle(playerid)) {
 		Logger_Dbg("inventory-dialog", "OnPlayerKeyStateChange",
 			Logger_I("playerid", playerid),
