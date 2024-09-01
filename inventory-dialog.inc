@@ -17,7 +17,16 @@
     #define INV_KEY_PUTAWAY KEY_YES
 #endif
 
-#include <a_samp>
+#tryinclude <open.mp>
+
+#if !defined _INC_open_mp
+	#include <a_samp>
+
+	#if !defined KEY
+		#define KEY: _:
+	#endif
+#endif
+
 #include <tick-difference>
 #include <item>
 #include <inventory>
@@ -159,7 +168,7 @@ stock DisplayPlayerInventory(playerid) {
 	}
 
 	new slots;
-	ret_outer = GetInventoryFreeSlots(playerid, slots);
+	GetInventoryFreeSlots(playerid, slots);
 
 	for(new i; i < slots; i++) {
 		strcat(list, "<Empty>\n");
@@ -463,7 +472,7 @@ _inv_displaySlotOptions(playerid, slotid) {
 	return 0;
 }
 
-hook OnPlayerKeyStateChange(playerid, newkeys, oldkeys) {
+hook OnPlayerKeyStateChange(playerid, KEY:newkeys, KEY:oldkeys) {
 	if(!IsPlayerInAnyVehicle(playerid)) {
 		Logger_Dbg("inventory-dialog", "OnPlayerKeyStateChange",
 			Logger_I("playerid", playerid),
@@ -478,6 +487,11 @@ hook OnPlayerKeyStateChange(playerid, newkeys, oldkeys) {
 	}
 
 	return 1;
+}
+
+timer PlayerPutItemInInventory[300](playerid, itemid) {
+	AddItemToInventory(playerid, Item:itemid);
+	CallLocalFunction("OnPlayerAddedToInventory", "dd", playerid, itemid);
 }
 
 _inv_putAway(playerid) {
@@ -520,10 +534,5 @@ _inv_putAway(playerid) {
 	inv_PutAwayTimer[playerid] = defer PlayerPutItemInInventory(playerid, _:itemid);
 
 	return;
-}
-
-timer PlayerPutItemInInventory[300](playerid, itemid) {
-	AddItemToInventory(playerid, Item:itemid);
-	CallLocalFunction("OnPlayerAddedToInventory", "dd", playerid, itemid);
 }
 
