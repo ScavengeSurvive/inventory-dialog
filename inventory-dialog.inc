@@ -159,7 +159,7 @@ stock DisplayPlayerInventory(playerid) {
 	}
 
 	new slots;
-	ret_outer = GetInventoryFreeSlots(playerid, slots);
+	GetInventoryFreeSlots(playerid, slots);
 
 	for(new i; i < slots; i++) {
 		strcat(list, "<Empty>\n");
