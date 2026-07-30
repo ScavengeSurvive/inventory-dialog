@@ -8,7 +8,7 @@
 		"pawn-lang/YSI-Includes:v5.05.0301",
 		"ScavengeSurvive/inventory@feat/pawnkit",
 		"ScavengeSurvive/container-dialog@feat/pawnkit",
-		"pawnkit/item:1.10.9",
+		"ScavengeSurvive/item@feat/pawnkit",
 		"ScavengeSurvive/tick-difference"
 	],
 	"build": {
