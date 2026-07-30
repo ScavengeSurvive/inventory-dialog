@@ -5,8 +5,7 @@
 #include <zcmd>
 
 main() {
-	logger_debug("inventory-dialog", true);
-	dbg("inventory-dialog", "debugging logging");
+	Logger_Dbg("inventory-dialog", "debugging logging");
 }
 
 static bool:lockInventory;
