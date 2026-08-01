@@ -1,6 +1,5 @@
 #include "inventory-dialog.inc"
 
-#include <test-boilerplate>
 #include <test-boilerplate-items>
 #include <zcmd>
 
